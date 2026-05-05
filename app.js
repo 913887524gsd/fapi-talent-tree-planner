@@ -58,16 +58,23 @@ const I18N = {
     languageAuto: "Auto",
     classSelector: "Class",
     currentStep: "Step",
+    nextTalentsTitle: "Next 10 Talents",
     priorityTitle: "Priority",
     dragHintDesktop: "Drag icons on desktop to sort",
+    doubleClickHint: "Double click to enable/disable",
     jumpToStep: "Jump to Step",
     prevStep: "Previous",
     nextStep: "Next",
+    next10Steps: "Next 10",
     resetSim: "Reset",
+    resetPriority: "Reset",
     moveLeft: "Move Left",
     moveRight: "Move Right",
-    targetPosition: "Position",
-    applyPosition: "Apply",
+    disableTalent: "Disable",
+    enableTalent: "Enable",
+    msgboxTitle: "Warning",
+    criticalTalentMsg: "This talent is required by the current simulation.",
+    msgboxOk: "OK",
     stageTitlePrefix: "Talent Tree",
     class_farmer: "Farmer",
     class_smasher: "Smasher",
@@ -83,16 +90,23 @@ const I18N = {
     languageAuto: "自动",
     classSelector: "职业",
     currentStep: "步骤",
+    nextTalentsTitle: "接下来 10 个天赋",
     priorityTitle: "天赋优先级",
     dragHintDesktop: "电脑端可直接拖拽图标排序",
+    doubleClickHint: "双击可启用/禁用天赋",
     jumpToStep: "跳转步数",
     prevStep: "上一步",
     nextStep: "下一步",
+    next10Steps: "下十步",
     resetSim: "重置",
+    resetPriority: "重置",
     moveLeft: "左移",
     moveRight: "右移",
-    targetPosition: "位置",
-    applyPosition: "应用",
+    disableTalent: "禁用",
+    enableTalent: "启用",
+    msgboxTitle: "警告",
+    criticalTalentMsg: "该天赋是当前模拟所必需的。",
+    msgboxOk: "确定",
     stageTitlePrefix: "天赋树",
     class_farmer: "农夫",
     class_smasher: "粉碎者",
@@ -103,7 +117,7 @@ const I18N = {
   },
 };
 
-const STORAGE_KEY = "talent-tree-ui";
+const STORAGE_KEY = "talent-tree-ui:v2026.05.08";
 const MAX_TALENT_POINTS = 10000;
 const debug = false;
 const logger = {
@@ -127,14 +141,23 @@ const elements = {
   languageSelect: document.getElementById("languageSelect"),
   pointsInput: document.getElementById("pointsInput"),
   stageTitle: document.getElementById("stageTitle"),
+  nextTalentsList: document.getElementById("nextTalentsList"),
   treeBoard: document.getElementById("treeBoard"),
   currentStepValue: document.getElementById("currentStepValue"),
   priorityList: document.getElementById("priorityList"),
   priorityEditor: document.getElementById("priorityEditor"),
-  priorityPositionInput: document.getElementById("priorityPositionInput"),
+  priorityToggleButton: document.getElementById("priorityToggleButton"),
   stepInput: document.getElementById("stepInput"),
   stepRange: document.getElementById("stepRange"),
+  msgboxBackdrop: document.getElementById("msgboxBackdrop"),
+  msgboxTitle: document.getElementById("msgboxTitle"),
+  msgboxMessage: document.getElementById("msgboxMessage"),
+  msgboxOkButton: document.getElementById("msgboxOkButton"),
 };
+
+function deepcopy(obj) {
+  return JSON.parse(JSON.stringify(obj));
+}
 
 function detectLocale() {
   return navigator.language && navigator.language.toLowerCase().startsWith("zh") ? "zh" : "en";
@@ -153,9 +176,13 @@ function defaultPriorityOrder(classId) {
   return [...tree.large, ...tree.medium, ...tree.small];
 }
 
+function disabledPrioritySet(plan = activePlan()) {
+  return new Set(plan.disabledPriorityIds ?? []);
+}
+
 class TalentMeta {
-  constructor() {
-    this.priorityOrder = activePlan().priorityOrder;
+  constructor(priorityOrder = activePlan().priorityOrder) {
+    this.priorityOrder = priorityOrder;
     this.currentStep = 0;
     this.order = [];
 
@@ -184,14 +211,11 @@ class TalentMeta {
     this.stepToTarget(currentStep);
   }
 
-  calcPushOrder(selectId, steps) {
+  calcPushOrder(selectId) {
     if (this.currentStep != this.order.length)
       logger.log("invalid step:", this.currentStep, this.order);
-    if (this.currentStep == steps)
-      return false;
     this.order.push(selectId);
     this.nextStep();
-    return true;
   }
 
   isBetterOrder(otherMeta) {
@@ -215,6 +239,19 @@ class TalentMeta {
     return this[selectId].state === "ready" ||
            this[selectId].state === "locked";
   } 
+
+  calcGetSerialized() {
+    let obj = {};
+    for (const id of this.priorityOrder) {
+      obj[id] = {state: this[id].state, cooldown: this[id].cooldown};
+    }
+    const sortedKeys = Object.keys(obj).sort();
+    const newObj = {};
+    sortedKeys.forEach(key => {
+      newObj[key] = obj[key];
+    });
+    return JSON.stringify(newObj);
+  }
 
   checkState(currentSelectId) {
     const tree = TALENT_TREE_DATA[state.selectedClass];
@@ -310,25 +347,103 @@ class TalentMeta {
         this.prevStep();
     }
   }
-}
 
-function defaultTalentMeta() {
-  return new TalentMeta();
-}
-
-function ensurePlan(classId) {
-  if (!state.plans[classId]) {
-    state.plans[classId] = {
-      points: 12,
-      priorityOrder: defaultPriorityOrder(classId),
-      currentStep: 0,
-    };
+  getNext10() {
+    return this.order.slice(this.currentStep, this.currentStep + 10);
   }
-  return state.plans[classId];
 }
 
-function activePlan() {
-  return ensurePlan(state.selectedClass);
+class Calculator {
+  constructor(priorityOrder, disabledSet, steps = 0) {
+    this.priorityOrder = deepcopy(priorityOrder);
+    this.disabledSet = new Set(disabledSet);
+    this.meta = new TalentMeta();
+    this.steps = steps;
+  }
+  
+  findFirstId(ids) {
+    for (const id of this.priorityOrder)
+      if (ids.includes(id))
+        return id;
+  }
+  
+  unlockMedium(selectId) {
+    const tree = TALENT_TREE_DATA[state.selectedClass];
+    let branchIdx = 0;
+    while (branchIdx < 3) {
+      let ids = BRANCH_INDEXES.medium[branchIdx].map((idx) => tree.medium[idx]);
+      if (ids.includes(selectId)) break;
+      branchIdx++;
+    }
+    if (branchIdx == 3) logger.log("invalid id:", id);
+    let ids = BRANCH_INDEXES.small[branchIdx]
+              .map((idx) => tree.small[idx])
+              .filter((id) => !this.meta.calcGetActived(id));
+    if (ids.length == 0) {
+      this.meta.calcPushOrder(selectId);
+    } else {
+      const id = this.findFirstId(ids);
+      this.meta.calcPushOrder(id);
+    }    
+  }
+
+  unlockLarge(selectId) {
+    const tree = TALENT_TREE_DATA[state.selectedClass];
+    let ids = [];
+    for (const id of tree.medium)
+      if (!this.meta.calcGetActived(id))
+        ids.push(id);
+    if (ids.length == 0) {
+      this.meta.calcPushOrder(selectId);
+    } else {
+      const id = this.findFirstId(ids);
+      if (this.meta.calcGetLocked(id))
+        this.unlockMedium(id);
+      else
+        this.meta.calcPushOrder(id)
+    }
+  }
+
+  step() {
+    for (const id of this.priorityOrder) {
+      if (this.disabledSet.has(id))
+        continue;
+      if (this.meta.calcGetReady(id)) {
+        if (this.meta.calcGetLocked(id)) {
+          if (this.meta[id].tier === "medium")
+            this.unlockMedium(id);
+          else if (this.meta[id].tier === "large")
+            this.unlockLarge(id);
+        } else {
+          this.meta.calcPushOrder(id);
+        }
+        return true;
+      }
+    }
+    return false;
+  }
+
+  calculate() {
+    while (this.meta.order.length < this.steps) {
+      logger.log(this.meta);
+      if (!this.step())
+        return null;
+    }
+    return this.meta;
+  }
+
+  validate() {
+    let existed = new Set();
+    while (true) {
+      logger.log(this.meta);
+      if (!this.step())
+        return false;
+      const serialized = this.meta.calcGetSerialized();
+      if (existed.has(serialized))
+        return true;
+      existed.add(serialized);
+    }
+  }
 }
 
 function readStorage() {
@@ -349,6 +464,29 @@ function writeStorage() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
 }
 
+function ensurePlan(classId) {
+  if (!state.plans[classId]) {
+    state.plans[classId] = {
+      points: 12,
+      priorityOrder: defaultPriorityOrder(classId),
+      disabledPriorityIds: [],
+      currentStep: 0,
+    };
+  }
+  return state.plans[classId];
+}
+
+function activePlan() {
+  return ensurePlan(state.selectedClass);
+}
+
+function savePlan() {
+  const plan = activePlan();
+  plan.points = state.points;
+  plan.currentStep = state.currentStep;
+  writeStorage();
+}
+
 function loadInitialState() {
   const saved = readStorage();
   state.localeChoice = saved?.localeChoice ?? "auto";
@@ -360,6 +498,7 @@ function loadInitialState() {
     const plan = ensurePlan(classId);
     const validIds = new Set(defaultPriorityOrder(classId));
     plan.priorityOrder = plan.priorityOrder.filter((id) => validIds.has(id));
+    plan.disabledPriorityIds = (plan.disabledPriorityIds ?? []).filter((id) => validIds.has(id));
     for (const id of defaultPriorityOrder(classId)) {
       if (!plan.priorityOrder.includes(id)) {
         plan.priorityOrder.push(id);
@@ -374,7 +513,7 @@ function applyPlanState() {
   const plan = activePlan();
   state.points = Number.isFinite(plan.points) ? plan.points : 12;
   state.currentStep = Number.isFinite(plan.currentStep) ? plan.currentStep : 0;
-  state.talentMeta = defaultTalentMeta();
+  state.talentMeta = new TalentMeta();
   state.selectedPriorityId = plan.priorityOrder[0] ?? null;
 }
 
@@ -404,12 +543,15 @@ function renderClassSelector() {
 }
 
 function renderPriorityList() {
+  const disabled = disabledPrioritySet();
+
   function priorityRowMarkup(talentId, index) {
     const isSelected = talentId === state.selectedPriorityId;
+    const isDisabled = disabled.has(talentId);
     return `
       <button
         type="button"
-        class="priority-row ${isSelected ? "selected" : ""}"
+        class="priority-row ${isSelected ? "selected" : ""} ${isDisabled ? "disabled" : ""}"
         data-talent-id="${talentId}"
         data-index="${index}"
         draggable="true"
@@ -420,15 +562,15 @@ function renderPriorityList() {
           <img class="priority-overlay" src="./assets/green.png" alt="" />
         </span>
         <span class="order-badge">${index + 1}</span>
+        ${isDisabled ? `<span class="disabled-badge" aria-hidden="true">OFF</span>` : ""}
       </button>
     `;
   }
   elements.priorityList.innerHTML = activePlan().priorityOrder.map(priorityRowMarkup).join("");
   const order = activePlan().priorityOrder;
   const selectedId = state.selectedPriorityId ?? order[0];
-  const selectedIndex = Math.max(order.indexOf(selectedId), 0);
-  elements.priorityPositionInput.max = String(order.length);
-  elements.priorityPositionInput.value = String(selectedIndex + 1);
+  const selectedDisabled = disabled.has(selectedId);
+  elements.priorityToggleButton.textContent = selectedDisabled ? t("enableTalent") : t("disableTalent");
 }
 
 function renderTalentStatus() {
@@ -439,6 +581,26 @@ function renderTalentStatus() {
   elements.stepRange.max = String(state.points);
   elements.stepInput.value = String(state.currentStep);
   elements.stepRange.value = String(state.currentStep);
+}
+
+function renderNextTalents(talentIds = []) {
+  const nextIds = Array.isArray(talentIds) ? talentIds.slice(0, 10) : [];
+  const talentMarkup = nextIds
+    .map(
+      (talentId, index) => `
+        <div class="next-talent" data-talent-id="${talentId}">
+          <span class="priority-icon" aria-hidden="true">
+            <img class="talent-base" src="./assets/base.png" alt="" />
+            <img class="talent-icon" src="./assets/${talentId}.png" alt="" />
+            <img class="priority-overlay" src="./assets/green.png" alt="" />
+          </span>
+          <span class="order-badge">${index + 1}</span>
+        </div>
+      `
+    )
+    .join("");
+
+  elements.nextTalentsList.innerHTML = talentMarkup;
 }
 
 function renderTree() {
@@ -500,14 +662,8 @@ function renderAll() {
   renderClassSelector();
   renderPriorityList();
   renderTalentStatus();
+  renderNextTalents();
   renderTree();
-}
-
-function savePlan() {
-  const plan = activePlan();
-  plan.points = state.points;
-  plan.currentStep = state.currentStep;
-  writeStorage();
 }
 
 function emit(eventName, detail) {
@@ -551,6 +707,23 @@ function bindClassSelector() {
 }
 
 function bindPriorityList() {
+  let lastToggledId = null;
+  let lastSavedOrder = null;
+
+  function checkAndRender(resetToggle = true) {
+    const plan = activePlan();
+    const order = plan.priorityOrder;
+    const disabled = disabledPrioritySet();
+    const enabledTalents = order.filter((id) => !disabled.has(id));
+    const disabledTalents = order.filter((id) => disabled.has(id));
+    plan.priorityOrder = [...enabledTalents, ...disabledTalents];
+    if (resetToggle) {
+      lastToggledId = null;
+      lastSavedOrder = null;
+    }
+    renderPriorityList();
+  }
+
   function reorderPriority(fromIndex, toIndex) {
     if (fromIndex === toIndex || fromIndex < 0 || toIndex < 0) {
       return;
@@ -561,7 +734,7 @@ function bindPriorityList() {
     activePlan().priorityOrder = order;
     state.selectedPriorityId = moved;
     savePlan();
-    renderPriorityList();
+    checkAndRender();
     emitConfigChange("priorityOrder");
   }
 
@@ -574,7 +747,9 @@ function bindPriorityList() {
   }
 
   function resolvePriorityPreviewIndex(clientX, draggedTalentId) {
-    const rows = [...elements.priorityList.querySelectorAll(".priority-row")]
+    const allRows = [...elements.priorityList.querySelectorAll(".priority-row")];
+    const draggedRow = allRows.find((row) => row.dataset.talentId === draggedTalentId);
+    const rows = allRows
       .filter((row) => row.dataset.talentId !== draggedTalentId)
       .sort((leftRow, rightRow) => {
         const leftOrder = Number(leftRow.style.order || leftRow.dataset.index);
@@ -582,14 +757,22 @@ function bindPriorityList() {
         return leftOrder - rightOrder;
       });
 
-    for (let index = 0; index < rows.length; index += 1) {
+    let previewIndex = rows.length;
+    for (let index = 0; index < rows.length; index++) {
       const rect = rows[index].getBoundingClientRect();
       if (clientX < rect.left + rect.width / 2) {
-        return index;
+        previewIndex = index;
+        break;
       }
     }
 
-    return rows.length;
+    const disabledStartIndex = rows.findIndex((row) => row.classList.contains("disabled"));
+    const boundaryIndex = disabledStartIndex === -1 ? rows.length : disabledStartIndex;
+    if (draggedRow.classList.contains("disabled")) {
+      return Math.max(boundaryIndex, previewIndex);
+    } else {
+      return Math.min(boundaryIndex, previewIndex);
+    }
   }
 
   function applyPriorityPreview(previewOrder, draggedTalentId) {
@@ -615,16 +798,101 @@ function bindPriorityList() {
     }
   }
 
-  let draggedIndex = null;
-  let dragPreviewIndex = null;
+  function validatePriority(disabled) {
+    let priorityOrder = deepcopy(activePlan().priorityOrder);
+    let firstIdx = [-1, -1, -1], tierMap = {"small": 0, "medium": 1, "large": 2};
+    for (let i = 0; i < priorityOrder.length; i++) {
+      let tierIdx = tierMap[state.talentMeta[priorityOrder[i]].tier];
+      if (firstIdx[tierIdx] == -1)
+        firstIdx[tierIdx] = i;
+    }
+    let isValid = () => {
+      let calculator = new Calculator(priorityOrder, disabled);
+      return calculator.validate();
+    };
+    let swapFirstTier = (leftTier, rightTier) => {
+      const leftIdx = firstIdx[leftTier];
+      const rightIdx = firstIdx[rightTier];
+      if (leftIdx === -1 || rightIdx === -1) {
+        return false;
+      }
+      [priorityOrder[leftIdx], priorityOrder[rightIdx]]
+      = [priorityOrder[rightIdx], priorityOrder[leftIdx]];
+      return true;
+    }
+    const execute = {
+      validPriority: false,
+      validSwap: true, 
+      run(left, right) {
+        if (this.validSwap && !this.validPriority) 
+          this.validPriority = isValid();        
+        this.validSwap = swapFirstTier(left, right);
+        return this; 
+      }
+    };
+    execute.run(0, 1).run(1, 2).run(0, 2)
+           .run(0, 1).run(1, 2).run(0, 2);
+    return execute.validPriority;
+  }
 
-  elements.priorityList.addEventListener("click", (event) => {
-    const button = event.target.closest("[data-talent-id]");
-    if (!button) {
+  function togglePriorityTalent(talentId) {
+    const plan = activePlan();
+    const order = plan.priorityOrder;
+    const disabled = disabledPrioritySet();
+    if (disabled.has(talentId)) {
+      disabled.delete(talentId);
+      if (lastToggledId === talentId) {
+        plan.priorityOrder = lastSavedOrder;
+      }
+    } else if (order.includes(talentId)) {
+      disabled.add(talentId);
+      if (validatePriority(disabled)) {
+        lastToggledId = talentId;
+        lastSavedOrder = deepcopy(order);
+      } else {
+        disabled.delete(talentId);
+        showMsgbox();
+      }
+    } else {
+      logger.log("invalid id:", talentId);
       return;
     }
-    state.selectedPriorityId = button.dataset.talentId;
-    renderPriorityList();
+    plan.disabledPriorityIds = plan.priorityOrder.filter((id) => disabled.has(id));
+    savePlan();
+    checkAndRender(false);
+    emitConfigChange("priorityOrder");
+  }
+
+  function resetPriorityOrder() {
+    const plan = activePlan();
+    plan.priorityOrder = defaultPriorityOrder(state.selectedClass);
+    plan.disabledPriorityIds = [];
+    state.selectedPriorityId = plan.priorityOrder[0] ?? null;
+    savePlan();
+    checkAndRender();
+    emitConfigChange("priorityOrder");
+  }
+
+  let draggedIndex = null;
+  let dragPreviewIndex = null;
+  let lastClickTime = 0;
+  const DOUBLE_CLICK_THRESHOLD = 350;
+
+  elements.priorityList.addEventListener("click", (event) => {
+      const button = event.target.closest("[data-talent-id]");
+      if (!button) return;
+
+      const currentTime = Date.now();
+      const talentId = button.dataset.talentId;
+
+      if (currentTime - lastClickTime < DOUBLE_CLICK_THRESHOLD) {
+          togglePriorityTalent(talentId);
+          lastClickTime = 0; 
+      } else {
+          state.selectedPriorityId = talentId;
+          checkAndRender();
+          lastClickTime = currentTime;
+      }
   });
 
   elements.priorityList.addEventListener("dragstart", (event) => {
@@ -694,18 +962,22 @@ function bindPriorityList() {
     if (!actionButton) {
       return;
     }
+    const action = actionButton.dataset.priorityAction;
+    if (action === "reset") {
+      resetPriorityOrder();
+      return;
+    }
+
     const selectedId = state.selectedPriorityId ?? activePlan().priorityOrder[0];
     if (!selectedId) {
       return;
     }
-    const action = actionButton.dataset.priorityAction;
     if (action === "left") {
       moveTalent(selectedId, (idx) => {return idx - 1;});
     } else if (action === "right") {
       moveTalent(selectedId, (idx) => {return idx + 1;});
-    } else if (action === "apply") {
-      const targetIndex = (Number(elements.priorityPositionInput.value) || 1) - 1;
-      moveTalent(selectedId, (idx) => {return targetIndex;});
+    } else if (action === "toggle") {
+      togglePriorityTalent(selectedId);
     }
   });
 }
@@ -751,11 +1023,32 @@ function bindSimulationControls() {
     } else if (action === "next") {
       syncStep(state.currentStep + 1);
       emitStepChange("next");
+    } else if (action === "next10") {
+      syncStep(state.currentStep + 10);
+      emitStepChange("next10");
     } else if (action === "reset") {
       syncStep(0);
       emitStepChange("reset");
     }
   });
+}
+
+function showMsgbox() {
+  const title = t("msgboxTitle");
+  const message = t("criticalTalentMsg");
+
+  elements.msgboxTitle.textContent = title;
+  elements.msgboxMessage.textContent = message;
+  elements.msgboxBackdrop.hidden = false;
+  elements.msgboxOkButton.focus();
+}
+
+function closeMsgbox() {
+  elements.msgboxBackdrop.hidden = true;
+}
+
+function bindMsgbox() {
+  elements.msgboxOkButton.addEventListener("click", closeMsgbox);
 }
 
 function bindControls() {
@@ -764,83 +1057,15 @@ function bindControls() {
   bindTalentPointControls();
   bindPriorityList();
   bindSimulationControls();
-}
-
-class Calculator {
-  constructor(priorityOrder, steps) {
-    this.priorityOrder = JSON.parse(JSON.stringify(priorityOrder));
-    this.meta = new TalentMeta();
-    this.steps = steps;
-  }
-  
-  findFirstId(ids) {
-    for (const id of this.priorityOrder)
-      if (ids.includes(id))
-        return id;
-  }
-  
-  unlockMedium(selectId) {
-    const tree = TALENT_TREE_DATA[state.selectedClass];
-    let branchIdx = 0;
-    while (branchIdx < 3) {
-      let ids = BRANCH_INDEXES.medium[branchIdx].map((idx) => tree.medium[idx]);
-      if (ids.includes(selectId)) break;
-      branchIdx++;
-    }
-    if (branchIdx == 3) logger.log("invalid id:", id);
-    let ids = BRANCH_INDEXES.small[branchIdx]
-              .map((idx) => tree.small[idx])
-              .filter((id) => !this.meta.calcGetActived(id));
-    if (ids.length == 0) {
-      this.meta.calcPushOrder(selectId, this.steps);
-    } else {
-      const id = this.findFirstId(ids);
-      this.meta.calcPushOrder(id, this.steps);
-    }    
-  }
-
-  unlockLarge(selectId) {
-    const tree = TALENT_TREE_DATA[state.selectedClass];
-    let ids = [];
-    for (const id of tree.medium)
-      if (!this.meta.calcGetActived(id))
-        ids.push(id);
-    if (ids.length == 0) {
-      this.meta.calcPushOrder(selectId, this.steps);
-    } else {
-      const id = this.findFirstId(ids);
-      if (this.meta.calcGetLocked(id))
-        this.unlockMedium(id);
-      else
-        this.meta.calcPushOrder(id, this.steps)
-    }
-  }
-
-  calculate() {
-    while (this.meta.order.length < this.steps) {
-      logger.log(this.meta)
-      for (const id of this.priorityOrder)
-        if (this.meta.calcGetReady(id)) {
-          if (this.meta.calcGetLocked(id)) {
-            if (this.meta[id].tier === "medium")
-              this.unlockMedium(id);
-            else if (this.meta[id].tier === "large")
-              this.unlockLarge(id);
-          } else {
-            this.meta.calcPushOrder(id, this.steps);
-          }
-          break;
-        }
-    }
-    return this.meta;
-  }
+  bindMsgbox();
 }
 
 function installPublicApi() {
   elements.app.addEventListener("calculator:config-change", (event) => {
     logger.log("config change ->", event.detail, state.currentStep, "/", state.points);
     let bestMeta = new TalentMeta();
-    let priorityOrder = JSON.parse(JSON.stringify(activePlan().priorityOrder));
+    let priorityOrder = deepcopy(activePlan().priorityOrder);
+    let disabled = disabledPrioritySet();
     let firstIdx = [-1, -1, -1], tierMap = {"small": 0, "medium": 1, "large": 2};
     for (let i = 0; i < priorityOrder.length; i++) {
       let tierIdx = tierMap[state.talentMeta[priorityOrder[i]].tier];
@@ -848,24 +1073,40 @@ function installPublicApi() {
         firstIdx[tierIdx] = i;
     }
     let findBest = () => {
-      let calculator = new Calculator(priorityOrder, state.points);
-      let newMeta = calculator.calculate();
+      let calculator = new Calculator(priorityOrder, disabled, state.points);
+      let newMeta = calculator.calculate() ?? bestMeta;
       if (newMeta.isBetterOrder(bestMeta))
         bestMeta = newMeta;
     };
-    findBest(); [priorityOrder[firstIdx[0]], priorityOrder[firstIdx[1]]] = [priorityOrder[firstIdx[1]], priorityOrder[firstIdx[0]]];
-    findBest(); [priorityOrder[firstIdx[1]], priorityOrder[firstIdx[2]]] = [priorityOrder[firstIdx[2]], priorityOrder[firstIdx[1]]];
-    findBest(); [priorityOrder[firstIdx[0]], priorityOrder[firstIdx[1]]] = [priorityOrder[firstIdx[1]], priorityOrder[firstIdx[0]]];
-    findBest(); [priorityOrder[firstIdx[1]], priorityOrder[firstIdx[2]]] = [priorityOrder[firstIdx[2]], priorityOrder[firstIdx[1]]];
-    findBest(); [priorityOrder[firstIdx[0]], priorityOrder[firstIdx[1]]] = [priorityOrder[firstIdx[1]], priorityOrder[firstIdx[0]]];
-    findBest(); [priorityOrder[firstIdx[1]], priorityOrder[firstIdx[2]]] = [priorityOrder[firstIdx[2]], priorityOrder[firstIdx[1]]];
+    let swapFirstTier = (leftTier, rightTier) => {
+      const leftIdx = firstIdx[leftTier];
+      const rightIdx = firstIdx[rightTier];
+      if (leftIdx === -1 || rightIdx === -1) {
+        return false;
+      }
+      [priorityOrder[leftIdx], priorityOrder[rightIdx]]
+      = [priorityOrder[rightIdx], priorityOrder[leftIdx]];
+      return true;
+    }
+    const execute = {
+      validSwap: true, 
+      run(left, right) {
+        if (this.validSwap) findBest();        
+        this.validSwap = swapFirstTier(left, right);
+        return this; 
+      }
+    };
+    execute.run(0, 1).run(1, 2).run(0, 2)
+           .run(0, 1).run(1, 2).run(0, 2);
     state.talentMeta.loadOrder(bestMeta.order);
     state.talentMeta.stepToTarget(state.currentStep);
+    renderNextTalents(state.talentMeta.getNext10());
     renderTree();
   });
   elements.app.addEventListener("calculator:step-change", (event) => {
     logger.log("step change ->", event.detail, state.currentStep, "/", state.points);
     state.talentMeta.stepToTarget(state.currentStep);
+    renderNextTalents(state.talentMeta.getNext10());
     renderTree();
   });
 }
@@ -873,5 +1114,5 @@ function installPublicApi() {
 loadInitialState();
 bindControls();
 installPublicApi();
-emitConfigChange("init");
 renderAll();
+emitConfigChange("init");

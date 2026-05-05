@@ -4,8 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Talent Tree Planner</title>
-    <link rel="stylesheet" href="./styles.css?v=2026.05.01" />
-    <script defer src="./app.js?v=2026.05.01"></script>
+    <link rel="stylesheet" href="./styles.css?v=2026.05.08" />
+    <script defer src="./app.js?v=2026.05.08"></script>
   </head>
   <body>
     <div class="app-shell" id="app">
@@ -42,11 +42,19 @@
 
         <div class="priority-editor" id="priorityEditor">
           <div class="priority-controls">
-            <p class="priority-drag-hint" data-i18n="dragHintDesktop">Drag icons on desktop to sort</p>
-            <label class="field compact priority-jump">
-              <span data-i18n="targetPosition">Position</span>
-              <input id="priorityPositionInput" type="number" min="1" max="16" value="1" />
-            </label>
+            <div class="priority-hints">
+              <p class="priority-drag-hint" data-i18n="dragHintDesktop">Drag icons on desktop to sort</p>
+              <p class="priority-drag-hint" data-i18n="doubleClickHint">Double click to enable/disable</p>
+            </div>
+            <button
+              type="button"
+              class="action-btn warning"
+              id="priorityToggleButton"
+              data-priority-action="toggle"
+              data-i18n="disableTalent"
+            >
+              Disable
+            </button>
             <button
               type="button"
               class="action-btn"
@@ -58,18 +66,18 @@
             <button
               type="button"
               class="action-btn"
-              data-priority-action="apply"
-              data-i18n="applyPosition"
-            >
-              Apply
-            </button>
-            <button
-              type="button"
-              class="action-btn"
               data-priority-action="right"
               data-i18n="moveRight"
             >
               Move Right
+            </button>
+            <button
+              type="button"
+              class="action-btn danger"
+              data-priority-action="reset"
+              data-i18n="resetPriority"
+            >
+              Reset
             </button>
           </div>
         </div>
@@ -101,6 +109,9 @@
                 <button type="button" class="action-btn primary" data-action="next" data-i18n="nextStep">
                   Next
                 </button>
+                <button type="button" class="action-btn primary" data-action="next10" data-i18n="next10Steps">
+                  Next 10
+                </button>
               </div>
               <div class="step-control">
                 <input id="stepRange" type="range" min="0" max="12" value="0" />
@@ -111,10 +122,33 @@
               </label>
             </div>
           </div>
-
+          <section class="next-talents" aria-labelledby="nextTalentsTitle">
+            <strong id="nextTalentsTitle" data-i18n="nextTalentsTitle">Next 10 Talents</strong>
+            <div id="nextTalentsList" class="next-talents-list"></div>
+          </section>
           <div id="treeBoard" class="tree-board"></div>
         </section>
       </main>
+
+      <div class="msgbox-backdrop" id="msgboxBackdrop" hidden>
+        <div
+          class="msgbox"
+          role="alertdialog"
+          aria-modal="true"
+          aria-labelledby="msgboxTitle"
+          aria-describedby="msgboxMessage"
+        >
+          <h2 id="msgboxTitle" data-i18n="msgboxTitle">Notice</h2>
+          <p id="msgboxMessage" data-i18n="criticalTalentMsg">
+            This talent is required by the current simulation.
+          </p>
+          <div class="msgbox-actions">
+            <button type="button" class="action-btn primary" id="msgboxOkButton" data-i18n="msgboxOk">
+              OK
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   </body>
 </html>
