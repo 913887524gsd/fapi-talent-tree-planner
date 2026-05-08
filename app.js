@@ -1,6 +1,6 @@
 const TALENT_TREE_DATA = {
   farmer: {
-    small: ["atk", "_con", "lck", "milk", "cal", "fry", "cexp", "hpt", "pexp"],
+    small: ["atk", "conicon", "lck", "milk", "cal", "fry", "cexp", "hpt", "pexp"],
     medium: ["con+", "swp", "pro", "seed", "reinc", "sexp"],
     large: ["uniq"],
   },
@@ -10,7 +10,7 @@ const TALENT_TREE_DATA = {
     large: ["uniq"],
   },
   hoer: {
-    small: ["atk", "_con", "agi", "milk", "hpt", "lqty", "fer", "pcap", "renown"],
+    small: ["atk", "conicon", "agi", "milk", "hpt", "lqty", "fer", "pcap", "renown"],
     medium: ["agi+", "cpow", "seed", "ir", "sexp", "reinc"],
     large: ["uniq"],
   },
@@ -20,7 +20,7 @@ const TALENT_TREE_DATA = {
     large: ["uniq"],
   },
   rancher: {
-    small: ["atk", "_con", "dex", "cal", "hpt", "milk", "lqty", "renown", "prnk"],
+    small: ["atk", "conicon", "dex", "cal", "hpt", "milk", "lqty", "renown", "prnk"],
     medium: ["dex+", "reinc", "cpow", "seed", "sexp", "skp"],
     large: ["uniq"],
   },
