@@ -31,6 +31,33 @@ const TALENT_TREE_DATA = {
   },
 };
 
+const DEFAULT_PRIORITY_DATA = {
+  farmer: {
+    priorityOrder: ["uniq", "swp", "sexp", "reinc", "fry", "hpt", "milk", "pexp", "seed", "atk", "con+", "pro", "conicon", "lck", "cal", "cexp"],
+    disabledPriorityIds: ["con+", "pro", "conicon", "lck", "cal", "cexp"],
+  },
+  smasher: {
+    priorityOrder: ["uniq", "skp", "sexp", "seed", "pcap", "renown", "cexp", "str+", "prnk", "hp", "ir", "cpow", "str", "agi", "leff", "fer"],
+    disabledPriorityIds: ["ir", "cpow", "str", "agi", "leff", "fer"],
+  },
+  hoer: {
+    priorityOrder: ["uniq", "seed", "sexp", "reinc", "renown", "milk", "pcap", "cpow", "atk", "conicon", "agi+", "ir", "agi", "hpt", "lqty", "fer"],
+    disabledPriorityIds: ["agi+", "ir", "agi", "hpt", "lqty", "fer"],
+  },
+  harvester: {
+    priorityOrder: ["uniq", "pro", "sexp", "seed", "renown", "pcap", "prnk", "res", "hp", "fry", "str+", "swp", "str", "dex", "lqty", "fer"],
+    disabledPriorityIds: ["str+", "swp", "str", "dex", "lqty", "fer"],
+  },
+  rancher: {
+    priorityOrder: ["uniq", "cpow", "sexp", "reinc", "renown", "milk", "prnk", "seed", "atk", "conicon", "dex+", "skp", "dex", "cal", "hpt", "lqty"],
+    disabledPriorityIds: ["dex+", "skp", "dex", "cal", "hpt", "lqty"],
+  },
+  freeloader: {
+    priorityOrder: ["uniq", "ir", "sexp", "seed", "pexp", "cexp", "res", "cal", "hp", "str", "lck+", "pro", "lck", "leff", "fry", "lqty"],
+    disabledPriorityIds: ["lck+", "pro", "lck", "leff", "fry", "lqty"],
+  },
+}
+
 const BRANCH_INDEXES = {
   small: [
     [0, 1, 2],
@@ -73,7 +100,7 @@ const I18N = {
     disableTalent: "Disable",
     enableTalent: "Enable",
     msgboxTitle: "Warning",
-    criticalTalentMsg: "This talent is required by the current simulation.",
+    criticalTalentMsg: "The new configuration is not viable for long-term simulation.",
     msgboxOk: "OK",
     stageTitlePrefix: "Talent Tree",
     class_farmer: "Farmer",
@@ -105,7 +132,7 @@ const I18N = {
     disableTalent: "禁用",
     enableTalent: "启用",
     msgboxTitle: "警告",
-    criticalTalentMsg: "该天赋是当前模拟所必需的。",
+    criticalTalentMsg: "新配置无法支持长期模拟。",
     msgboxOk: "确定",
     stageTitlePrefix: "天赋树",
     class_farmer: "农夫",
@@ -117,7 +144,7 @@ const I18N = {
   },
 };
 
-const STORAGE_KEY = "talent-tree-ui:v2026.05.08";
+const STORAGE_KEY = "talent-tree-ui:v2026.05.11";
 const MAX_TALENT_POINTS = 10000;
 const debug = false;
 const logger = {
@@ -172,8 +199,13 @@ function classLabel(classId) {
 }
 
 function defaultPriorityOrder(classId) {
-  const tree = TALENT_TREE_DATA[classId];
-  return [...tree.large, ...tree.medium, ...tree.small];
+  const priorityOrder = DEFAULT_PRIORITY_DATA[classId].priorityOrder;
+  return [...priorityOrder];
+}
+
+function defaultDisabledPriorityIds(classId) {
+  const disabledPriorityIds = DEFAULT_PRIORITY_DATA[classId].disabledPriorityIds;
+  return [...disabledPriorityIds];
 }
 
 function disabledPrioritySet(plan = activePlan()) {
@@ -469,7 +501,7 @@ function ensurePlan(classId) {
     state.plans[classId] = {
       points: 12,
       priorityOrder: defaultPriorityOrder(classId),
-      disabledPriorityIds: [],
+      disabledPriorityIds: defaultDisabledPriorityIds(classId),
       currentStep: 0,
     };
   }
@@ -498,7 +530,7 @@ function loadInitialState() {
     const plan = ensurePlan(classId);
     const validIds = new Set(defaultPriorityOrder(classId));
     plan.priorityOrder = plan.priorityOrder.filter((id) => validIds.has(id));
-    plan.disabledPriorityIds = (plan.disabledPriorityIds ?? []).filter((id) => validIds.has(id));
+    plan.disabledPriorityIds = plan.disabledPriorityIds.filter((id) => validIds.has(id));
     for (const id of defaultPriorityOrder(classId)) {
       if (!plan.priorityOrder.includes(id)) {
         plan.priorityOrder.push(id);
@@ -724,6 +756,43 @@ function bindPriorityList() {
     renderPriorityList();
   }
 
+  function validatePriority(order, disabled) {
+    let priorityOrder = deepcopy(order);
+    let firstIdx = [-1, -1, -1], tierMap = {"small": 0, "medium": 1, "large": 2};
+    for (let i = 0; i < priorityOrder.length; i++) {
+      let tierIdx = tierMap[state.talentMeta[priorityOrder[i]].tier];
+      if (firstIdx[tierIdx] == -1)
+        firstIdx[tierIdx] = i;
+    }
+    let isValid = () => {
+      let calculator = new Calculator(priorityOrder, disabled);
+      return calculator.validate();
+    };
+    let swapFirstTier = (leftTier, rightTier) => {
+      const leftIdx = firstIdx[leftTier];
+      const rightIdx = firstIdx[rightTier];
+      if (leftIdx === -1 || rightIdx === -1) {
+        return false;
+      }
+      [priorityOrder[leftIdx], priorityOrder[rightIdx]]
+      = [priorityOrder[rightIdx], priorityOrder[leftIdx]];
+      return true;
+    }
+    const execute = {
+      validPriority: false,
+      validSwap: true, 
+      run(left, right) {
+        if (this.validSwap && !this.validPriority) 
+          this.validPriority = isValid();        
+        this.validSwap = swapFirstTier(left, right);
+        return this; 
+      }
+    };
+    execute.run(0, 1).run(1, 2).run(0, 2)
+           .run(0, 1).run(1, 2).run(0, 2);
+    return execute.validPriority;
+  }
+
   function reorderPriority(fromIndex, toIndex) {
     if (fromIndex === toIndex || fromIndex < 0 || toIndex < 0) {
       return;
@@ -731,11 +800,15 @@ function bindPriorityList() {
     const order = [...activePlan().priorityOrder];
     const [moved] = order.splice(fromIndex, 1);
     order.splice(toIndex, 0, moved);
-    activePlan().priorityOrder = order;
-    state.selectedPriorityId = moved;
-    savePlan();
-    checkAndRender();
-    emitConfigChange("priorityOrder");
+    if (validatePriority(order, activePlan().disabledPriorityIds)) {
+      activePlan().priorityOrder = order;
+      state.selectedPriorityId = moved;
+      savePlan();
+      checkAndRender();
+      emitConfigChange("priorityOrder");
+    } else {
+      showMsgbox();
+    }
   }
 
   function buildPriorityPreviewOrder(order, fromIndex, nextIndex) {
@@ -798,43 +871,6 @@ function bindPriorityList() {
     }
   }
 
-  function validatePriority(disabled) {
-    let priorityOrder = deepcopy(activePlan().priorityOrder);
-    let firstIdx = [-1, -1, -1], tierMap = {"small": 0, "medium": 1, "large": 2};
-    for (let i = 0; i < priorityOrder.length; i++) {
-      let tierIdx = tierMap[state.talentMeta[priorityOrder[i]].tier];
-      if (firstIdx[tierIdx] == -1)
-        firstIdx[tierIdx] = i;
-    }
-    let isValid = () => {
-      let calculator = new Calculator(priorityOrder, disabled);
-      return calculator.validate();
-    };
-    let swapFirstTier = (leftTier, rightTier) => {
-      const leftIdx = firstIdx[leftTier];
-      const rightIdx = firstIdx[rightTier];
-      if (leftIdx === -1 || rightIdx === -1) {
-        return false;
-      }
-      [priorityOrder[leftIdx], priorityOrder[rightIdx]]
-      = [priorityOrder[rightIdx], priorityOrder[leftIdx]];
-      return true;
-    }
-    const execute = {
-      validPriority: false,
-      validSwap: true, 
-      run(left, right) {
-        if (this.validSwap && !this.validPriority) 
-          this.validPriority = isValid();        
-        this.validSwap = swapFirstTier(left, right);
-        return this; 
-      }
-    };
-    execute.run(0, 1).run(1, 2).run(0, 2)
-           .run(0, 1).run(1, 2).run(0, 2);
-    return execute.validPriority;
-  }
-
   function togglePriorityTalent(talentId) {
     const plan = activePlan();
     const order = plan.priorityOrder;
@@ -846,7 +882,7 @@ function bindPriorityList() {
       }
     } else if (order.includes(talentId)) {
       disabled.add(talentId);
-      if (validatePriority(disabled)) {
+      if (validatePriority(activePlan().priorityOrder, disabled)) {
         lastToggledId = talentId;
         lastSavedOrder = deepcopy(order);
       } else {
@@ -860,13 +896,13 @@ function bindPriorityList() {
     plan.disabledPriorityIds = plan.priorityOrder.filter((id) => disabled.has(id));
     savePlan();
     checkAndRender(false);
-    emitConfigChange("priorityOrder");
+    emitConfigChange("priorityToggle");
   }
 
   function resetPriorityOrder() {
     const plan = activePlan();
     plan.priorityOrder = defaultPriorityOrder(state.selectedClass);
-    plan.disabledPriorityIds = [];
+    plan.disabledPriorityIds = defaultDisabledPriorityIds(state.selectedClass);
     state.selectedPriorityId = plan.priorityOrder[0] ?? null;
     savePlan();
     checkAndRender();
