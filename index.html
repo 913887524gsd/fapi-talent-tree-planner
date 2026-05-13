@@ -4,8 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Talent Tree Planner</title>
-    <link rel="stylesheet" href="./styles.css?v=2026.05.11" />
-    <script defer src="./app.js?v=2026.05.11"></script>
+    <link rel="stylesheet" href="./styles.css?v=2026.05.13" />
+    <script defer src="./app.js?v=2026.05.13"></script>
   </head>
   <body>
     <div class="app-shell" id="app">
@@ -36,9 +36,36 @@
       <section class="panel priority-card">
         <div class="section-heading">
           <h2 data-i18n="priorityTitle">Priority</h2>
+          <div
+            class="mode-switch"
+            id="priorityModeSwitch"
+            role="radiogroup"
+            data-active-mode="strict"
+          >
+            <button
+              type="button"
+              class="mode-option active"
+              id="priorityStrictModeButton"
+              data-priority-mode="strict"
+              role="radio"
+              data-i18n="priorityModeStrict"
+            >
+              Strict
+            </button>
+            <button
+              type="button"
+              class="mode-option"
+              id="priorityAdaptiveModeButton"
+              data-priority-mode="adaptive"
+              role="radio"
+              data-i18n="priorityModeAdaptive"
+            >
+              Adaptive
+            </button>
+          </div>
         </div>
 
-        <div id="priorityList" class="priority-list" aria-live="polite"></div>
+        <div id="priorityList" class="priority-list"></div>
 
         <div class="priority-editor" id="priorityEditor">
           <div class="priority-controls">
@@ -122,7 +149,7 @@
               </label>
             </div>
           </div>
-          <section class="next-talents" aria-labelledby="nextTalentsTitle">
+          <section class="next-talents">
             <strong id="nextTalentsTitle" data-i18n="nextTalentsTitle">Next 10 Talents</strong>
             <div id="nextTalentsList" class="next-talents-list"></div>
           </section>
@@ -134,9 +161,6 @@
         <div
           class="msgbox"
           role="alertdialog"
-          aria-modal="true"
-          aria-labelledby="msgboxTitle"
-          aria-describedby="msgboxMessage"
         >
           <h2 id="msgboxTitle" data-i18n="msgboxTitle">Notice</h2>
           <p id="msgboxMessage" data-i18n="criticalTalentMsg">

@@ -31,32 +31,72 @@ const TALENT_TREE_DATA = {
   },
 };
 
+const ADAPTIVE = "adaptive";
+const STRICT = "strict";
+const PRIORITY_MODES = [STRICT, ADAPTIVE];
+
 const DEFAULT_PRIORITY_DATA = {
   farmer: {
-    priorityOrder: ["uniq", "swp", "sexp", "reinc", "fry", "hpt", "milk", "pexp", "seed", "atk", "con+", "pro", "conicon", "lck", "cal", "cexp"],
-    disabledPriorityIds: ["con+", "pro", "conicon", "lck", "cal", "cexp"],
+    strict: {
+      priorityOrder: ["uniq", "swp", "sexp", "reinc", "fry", "hpt", "milk", "pexp", "seed", "atk", "con+", "pro", "conicon", "lck", "cal", "cexp"],
+      disabledPriorityIds: ["con+", "pro", "conicon", "lck", "cal", "cexp"],
+    },
+    adaptive: {
+      priorityOrder: ["uniq", "swp", "sexp", "reinc", "fry", "hpt", "milk", "pexp", "seed", "atk", "con+", "pro", "conicon", "lck", "cal", "cexp"],
+      disabledPriorityIds: ["con+", "pro", "conicon", "lck", "cal", "cexp"],
+    },
   },
   smasher: {
-    priorityOrder: ["uniq", "skp", "sexp", "seed", "pcap", "renown", "cexp", "str+", "prnk", "hp", "ir", "cpow", "str", "agi", "leff", "fer"],
-    disabledPriorityIds: ["ir", "cpow", "str", "agi", "leff", "fer"],
+    strict: {
+      priorityOrder: ["uniq", "skp", "sexp", "seed", "pcap", "renown", "cexp", "str+", "prnk", "hp", "ir", "cpow", "str", "agi", "leff", "fer"],
+      disabledPriorityIds: ["ir", "cpow", "str", "agi", "leff", "fer"],
+    },
+    adaptive: {
+      priorityOrder: ["uniq", "skp", "sexp", "seed", "pcap", "renown", "cexp", "str+", "prnk", "hp", "ir", "cpow", "str", "agi", "leff", "fer"],
+      disabledPriorityIds: ["ir", "cpow", "str", "agi", "leff", "fer"],
+    },
   },
   hoer: {
-    priorityOrder: ["uniq", "seed", "sexp", "reinc", "renown", "milk", "pcap", "cpow", "atk", "conicon", "agi+", "ir", "agi", "hpt", "lqty", "fer"],
-    disabledPriorityIds: ["agi+", "ir", "agi", "hpt", "lqty", "fer"],
+    strict: {
+      priorityOrder: ["uniq", "seed", "sexp", "reinc", "renown", "milk", "pcap", "cpow", "atk", "conicon", "agi+", "ir", "agi", "hpt", "lqty", "fer"],
+      disabledPriorityIds: ["agi+", "ir", "agi", "hpt", "lqty", "fer"],
+    },
+    adaptive: {
+      priorityOrder: ["uniq", "seed", "sexp", "reinc", "renown", "milk", "pcap", "cpow", "atk", "conicon", "agi+", "ir", "agi", "hpt", "lqty", "fer"],
+      disabledPriorityIds: ["agi+", "ir", "agi", "hpt", "lqty", "fer"],
+    },
   },
   harvester: {
-    priorityOrder: ["uniq", "pro", "sexp", "seed", "renown", "pcap", "prnk", "res", "hp", "fry", "str+", "swp", "str", "dex", "lqty", "fer"],
-    disabledPriorityIds: ["str+", "swp", "str", "dex", "lqty", "fer"],
+    strict: {
+      priorityOrder: ["uniq", "pro", "sexp", "seed", "renown", "pcap", "prnk", "res", "hp", "fry", "str+", "swp", "str", "dex", "lqty", "fer"],
+      disabledPriorityIds: ["str+", "swp", "str", "dex", "lqty", "fer"],
+    },
+    adaptive: {
+      priorityOrder: ["uniq", "pro", "sexp", "seed", "renown", "pcap", "prnk", "res", "hp", "fry", "str+", "swp", "str", "dex", "lqty", "fer"],
+      disabledPriorityIds: ["str+", "swp", "str", "dex", "lqty", "fer"],
+    },
   },
   rancher: {
-    priorityOrder: ["uniq", "cpow", "sexp", "reinc", "renown", "milk", "prnk", "seed", "atk", "conicon", "dex+", "skp", "dex", "cal", "hpt", "lqty"],
-    disabledPriorityIds: ["dex+", "skp", "dex", "cal", "hpt", "lqty"],
+    strict: {
+      priorityOrder: ["uniq", "cpow", "sexp", "reinc", "renown", "milk", "prnk", "seed", "atk", "conicon", "dex+", "skp", "dex", "cal", "hpt", "lqty"],
+      disabledPriorityIds: ["dex+", "skp", "dex", "cal", "hpt", "lqty"],
+    },
+    adaptive: {
+      priorityOrder: ["uniq", "cpow", "sexp", "reinc", "renown", "milk", "prnk", "seed", "atk", "conicon", "dex+", "skp", "dex", "cal", "hpt", "lqty"],
+      disabledPriorityIds: ["dex+", "skp", "dex", "cal", "hpt", "lqty"],
+    },
   },
   freeloader: {
-    priorityOrder: ["uniq", "ir", "sexp", "seed", "pexp", "cexp", "res", "cal", "hp", "str", "lck+", "pro", "lck", "leff", "fry", "lqty"],
-    disabledPriorityIds: ["lck+", "pro", "lck", "leff", "fry", "lqty"],
+    strict: {
+      priorityOrder: ["uniq", "ir", "sexp", "seed", "pexp", "cexp", "res", "cal", "hp", "str", "lck+", "pro", "lck", "leff", "fry", "lqty"],
+      disabledPriorityIds: ["lck+", "pro", "lck", "leff", "fry", "lqty"],
+    },
+    adaptive: {
+      priorityOrder: ["uniq", "ir", "sexp", "seed", "pexp", "cexp", "res", "cal", "hp", "str", "lck+", "pro", "lck", "leff", "fry", "lqty"],
+      disabledPriorityIds: ["lck+", "pro", "lck", "leff", "fry", "lqty"],
+    },
   },
-}
+};
 
 const BRANCH_INDEXES = {
   small: [
@@ -87,6 +127,8 @@ const I18N = {
     currentStep: "Step",
     nextTalentsTitle: "Next 10 Talents",
     priorityTitle: "Priority",
+    priorityModeStrict: "Strict",
+    priorityModeAdaptive: "Adaptive",
     dragHintDesktop: "Drag icons on desktop to sort",
     doubleClickHint: "Double click to enable/disable",
     jumpToStep: "Jump to Step",
@@ -119,6 +161,8 @@ const I18N = {
     currentStep: "步骤",
     nextTalentsTitle: "接下来 10 个天赋",
     priorityTitle: "天赋优先级",
+    priorityModeStrict: "精确分配",
+    priorityModeAdaptive: "自动补全",
     dragHintDesktop: "电脑端可直接拖拽图标排序",
     doubleClickHint: "双击可启用/禁用天赋",
     jumpToStep: "跳转步数",
@@ -144,9 +188,9 @@ const I18N = {
   },
 };
 
-const STORAGE_KEY = "talent-tree-ui:v2026.05.11";
+const STORAGE_KEY = "talent-tree-ui:v2026.05.13";
 const MAX_TALENT_POINTS = 10000;
-const debug = false;
+let debug = false;
 const logger = {
   log: debug ? console.log.bind(console, "[DEBUG]:") : () => {}
 };
@@ -156,6 +200,7 @@ const state = {
   locale: "en",
   selectedClass: "farmer",
   selectedPriorityId: null,
+  priorityMode: ADAPTIVE,
   points: 12,
   currentStep: 0,
   plans: {},
@@ -173,6 +218,8 @@ const elements = {
   currentStepValue: document.getElementById("currentStepValue"),
   priorityList: document.getElementById("priorityList"),
   priorityEditor: document.getElementById("priorityEditor"),
+  priorityModeSwitch: document.getElementById("priorityModeSwitch"),
+  priorityModeButtons: document.querySelectorAll("[data-priority-mode]"),
   priorityToggleButton: document.getElementById("priorityToggleButton"),
   stepInput: document.getElementById("stepInput"),
   stepRange: document.getElementById("stepRange"),
@@ -198,22 +245,25 @@ function classLabel(classId) {
   return t(`class_${classId}`);
 }
 
-function defaultPriorityOrder(classId) {
-  const priorityOrder = DEFAULT_PRIORITY_DATA[classId].priorityOrder;
-  return [...priorityOrder];
+function defaultPriorityConfig(classId = state.selectedClass, mode = state.priorityMode) {
+  const priorityData = DEFAULT_PRIORITY_DATA[classId]?.[mode] ?? DEFAULT_PRIORITY_DATA[classId]?.adaptive;
+  return {
+    priorityOrder: [...priorityData.priorityOrder],
+    disabledPriorityIds: [...priorityData.disabledPriorityIds],
+  };
 }
 
-function defaultDisabledPriorityIds(classId) {
-  const disabledPriorityIds = DEFAULT_PRIORITY_DATA[classId].disabledPriorityIds;
-  return [...disabledPriorityIds];
+function activePriorityConfig() {
+  const plan = activePlan();
+  return plan.priorities[state.priorityMode];
 }
 
-function disabledPrioritySet(plan = activePlan()) {
-  return new Set(plan.disabledPriorityIds ?? []);
+function disabledPrioritySet(config = activePriorityConfig()) {
+  return new Set(config.disabledPriorityIds ?? []);
 }
 
 class TalentMeta {
-  constructor(priorityOrder = activePlan().priorityOrder) {
+  constructor(priorityOrder = activePriorityConfig().priorityOrder) {
     this.priorityOrder = priorityOrder;
     this.currentStep = 0;
     this.order = [];
@@ -386,15 +436,16 @@ class TalentMeta {
 }
 
 class Calculator {
-  constructor(priorityOrder, disabledSet, steps = 0) {
+  constructor(priorityOrder, assignedPriorityOrder, disabledSet, steps = 0) {
     this.priorityOrder = deepcopy(priorityOrder);
+    this.assignedPriorityOrder = deepcopy(assignedPriorityOrder);
     this.disabledSet = new Set(disabledSet);
-    this.meta = new TalentMeta();
+    this.meta = new TalentMeta(this.priorityOrder);
     this.steps = steps;
   }
   
   findFirstId(ids) {
-    for (const id of this.priorityOrder)
+    for (const id of this.assignedPriorityOrder)
       if (ids.includes(id))
         return id;
   }
@@ -437,7 +488,7 @@ class Calculator {
   }
 
   step() {
-    for (const id of this.priorityOrder) {
+    for (const id of this.assignedPriorityOrder) {
       if (this.disabledSet.has(id))
         continue;
       if (this.meta.calcGetReady(id)) {
@@ -472,9 +523,18 @@ class Calculator {
         return false;
       const serialized = this.meta.calcGetSerialized();
       if (existed.has(serialized))
-        return true;
+        break;
       existed.add(serialized);
     }
+    const storedLevel = {};
+    ['small', 'medium', 'large'].forEach(tier => storedLevel[tier] = MAX_TALENT_POINTS);
+    for (const id of this.priorityOrder) {
+      const meta = this.meta[id];
+      if (meta.level > storedLevel[meta.tier])
+        return false;
+      storedLevel[meta.tier] = meta.level;
+    }
+    return true;
   }
 }
 
@@ -500,8 +560,11 @@ function ensurePlan(classId) {
   if (!state.plans[classId]) {
     state.plans[classId] = {
       points: 12,
-      priorityOrder: defaultPriorityOrder(classId),
-      disabledPriorityIds: defaultDisabledPriorityIds(classId),
+      priorityMode: ADAPTIVE,
+      priorities: {
+        strict: defaultPriorityConfig(classId, STRICT),
+        adaptive: defaultPriorityConfig(classId, ADAPTIVE),
+      },
       currentStep: 0,
     };
   }
@@ -516,6 +579,7 @@ function savePlan() {
   const plan = activePlan();
   plan.points = state.points;
   plan.currentStep = state.currentStep;
+  plan.priorityMode = state.priorityMode;
   writeStorage();
 }
 
@@ -528,12 +592,14 @@ function loadInitialState() {
 
   for (const classId of Object.keys(TALENT_TREE_DATA)) {
     const plan = ensurePlan(classId);
-    const validIds = new Set(defaultPriorityOrder(classId));
-    plan.priorityOrder = plan.priorityOrder.filter((id) => validIds.has(id));
-    plan.disabledPriorityIds = plan.disabledPriorityIds.filter((id) => validIds.has(id));
-    for (const id of defaultPriorityOrder(classId)) {
-      if (!plan.priorityOrder.includes(id)) {
-        plan.priorityOrder.push(id);
+
+    if (!PRIORITY_MODES.includes(plan.priorityMode)) {
+      plan.priorityMode = ADAPTIVE;
+    }
+    if (!plan.priorities || typeof plan.priorities !== "object") {
+      plan.priorities = {}
+      for (const mode of PRIORITY_MODES) {
+        plan.priorities[mode] = defaultPriorityConfig(classId, mode);
       }
     }
   }
@@ -545,8 +611,9 @@ function applyPlanState() {
   const plan = activePlan();
   state.points = Number.isFinite(plan.points) ? plan.points : 12;
   state.currentStep = Number.isFinite(plan.currentStep) ? plan.currentStep : 0;
+  state.priorityMode = PRIORITY_MODES.includes(plan.priorityMode) ? plan.priorityMode : ADAPTIVE;
   state.talentMeta = new TalentMeta();
-  state.selectedPriorityId = plan.priorityOrder[0] ?? null;
+  state.selectedPriorityId = activePriorityConfig().priorityOrder[0] ?? null;
 }
 
 function renderTranslations() {
@@ -574,7 +641,7 @@ function renderClassSelector() {
     .join("");
 }
 
-function renderPriorityList() {
+function renderPriority() {
   const disabled = disabledPrioritySet();
 
   function priorityRowMarkup(talentId, index) {
@@ -598,11 +665,18 @@ function renderPriorityList() {
       </button>
     `;
   }
-  elements.priorityList.innerHTML = activePlan().priorityOrder.map(priorityRowMarkup).join("");
-  const order = activePlan().priorityOrder;
+  const priorityConfig = activePriorityConfig();
+  elements.priorityList.innerHTML = priorityConfig.priorityOrder.map(priorityRowMarkup).join("");
+  const order = priorityConfig.priorityOrder;
   const selectedId = state.selectedPriorityId ?? order[0];
   const selectedDisabled = disabled.has(selectedId);
   elements.priorityToggleButton.textContent = selectedDisabled ? t("enableTalent") : t("disableTalent");
+
+  elements.priorityModeSwitch.dataset.activeMode = state.priorityMode;
+  for (const button of elements.priorityModeButtons) {
+    const isActive = button.dataset.priorityMode === state.priorityMode;
+    button.classList.toggle("active", isActive);
+  }
 }
 
 function renderTalentStatus() {
@@ -692,11 +766,86 @@ function renderTree() {
 function renderAll() {
   renderTranslations();
   renderClassSelector();
-  renderPriorityList();
+  renderPriority();
   renderTalentStatus();
   renderNextTalents();
   renderTree();
 }
+
+function calculatePriority(priorityOrder, disabled) {
+    let assignedPriorityOrder = deepcopy(priorityOrder);
+    let bestMeta = new TalentMeta();
+    let firstIdx = [-1, -1, -1], tierMap = {"small": 0, "medium": 1, "large": 2};
+    for (let i = 0; i < assignedPriorityOrder.length; i++) {
+      let tierIdx = tierMap[state.talentMeta[assignedPriorityOrder[i]].tier];
+      if (firstIdx[tierIdx] == -1)
+        firstIdx[tierIdx] = i;
+    }
+    let findBest = () => {
+      let calculator = new Calculator(priorityOrder, assignedPriorityOrder, disabled, state.points);
+      let newMeta = calculator.calculate() ?? bestMeta;
+      if (newMeta.isBetterOrder(bestMeta))
+        bestMeta = newMeta;
+    };
+    let swapFirstTier = (leftTier, rightTier) => {
+      const leftIdx = firstIdx[leftTier];
+      const rightIdx = firstIdx[rightTier];
+      if (leftIdx === -1 || rightIdx === -1) {
+        return false;
+      }
+      [assignedPriorityOrder[leftIdx], assignedPriorityOrder[rightIdx]]
+      = [assignedPriorityOrder[rightIdx], assignedPriorityOrder[leftIdx]];
+      return true;
+    }
+    const execute = {
+      validSwap: true, 
+      run(left, right) {
+        if (this.validSwap) findBest();        
+        this.validSwap = swapFirstTier(left, right);
+        return this; 
+      }
+    };
+    execute.run(0, 1).run(1, 2).run(0, 2)
+            .run(0, 1).run(1, 2).run(0, 2);
+    return bestMeta;
+}
+
+function validatePriority(priorityOrder, disabled) {
+    let assignedPriorityOrder = deepcopy(priorityOrder);
+    let firstIdx = [-1, -1, -1], tierMap = {"small": 0, "medium": 1, "large": 2};
+    for (let i = 0; i < assignedPriorityOrder.length; i++) {
+      let tierIdx = tierMap[state.talentMeta[assignedPriorityOrder[i]].tier];
+      if (firstIdx[tierIdx] == -1)
+        firstIdx[tierIdx] = i;
+    }
+    let isValid = () => {
+      let calculator = new Calculator(priorityOrder, assignedPriorityOrder, disabled);
+      return calculator.validate();
+    };
+    let swapFirstTier = (leftTier, rightTier) => {
+      const leftIdx = firstIdx[leftTier];
+      const rightIdx = firstIdx[rightTier];
+      if (leftIdx === -1 || rightIdx === -1) {
+        return false;
+      }
+      [assignedPriorityOrder[leftIdx], assignedPriorityOrder[rightIdx]]
+      = [assignedPriorityOrder[rightIdx], assignedPriorityOrder[leftIdx]];
+      return true;
+    }
+    const execute = {
+      validPriority: false,
+      validSwap: true, 
+      run(left, right) {
+        if (this.validSwap && !this.validPriority) 
+          this.validPriority = isValid();        
+        this.validSwap = swapFirstTier(left, right);
+        return this; 
+      }
+    };
+    execute.run(0, 1).run(1, 2).run(0, 2)
+           .run(0, 1).run(1, 2).run(0, 2);
+    return execute.validPriority;
+  }
 
 function emit(eventName, detail) {
   elements.app.dispatchEvent(new CustomEvent(eventName, { detail }));
@@ -738,70 +887,35 @@ function bindClassSelector() {
   });
 }
 
-function bindPriorityList() {
+function bindPriority() {
   let lastToggledId = null;
   let lastSavedOrder = null;
 
   function checkAndRender(resetToggle = true) {
-    const plan = activePlan();
-    const order = plan.priorityOrder;
+    const priorityConfig = activePriorityConfig();
+    const order = priorityConfig.priorityOrder;
     const disabled = disabledPrioritySet();
     const enabledTalents = order.filter((id) => !disabled.has(id));
     const disabledTalents = order.filter((id) => disabled.has(id));
-    plan.priorityOrder = [...enabledTalents, ...disabledTalents];
+    priorityConfig.priorityOrder = [...enabledTalents, ...disabledTalents];
     if (resetToggle) {
       lastToggledId = null;
       lastSavedOrder = null;
     }
-    renderPriorityList();
-  }
-
-  function validatePriority(order, disabled) {
-    let priorityOrder = deepcopy(order);
-    let firstIdx = [-1, -1, -1], tierMap = {"small": 0, "medium": 1, "large": 2};
-    for (let i = 0; i < priorityOrder.length; i++) {
-      let tierIdx = tierMap[state.talentMeta[priorityOrder[i]].tier];
-      if (firstIdx[tierIdx] == -1)
-        firstIdx[tierIdx] = i;
-    }
-    let isValid = () => {
-      let calculator = new Calculator(priorityOrder, disabled);
-      return calculator.validate();
-    };
-    let swapFirstTier = (leftTier, rightTier) => {
-      const leftIdx = firstIdx[leftTier];
-      const rightIdx = firstIdx[rightTier];
-      if (leftIdx === -1 || rightIdx === -1) {
-        return false;
-      }
-      [priorityOrder[leftIdx], priorityOrder[rightIdx]]
-      = [priorityOrder[rightIdx], priorityOrder[leftIdx]];
-      return true;
-    }
-    const execute = {
-      validPriority: false,
-      validSwap: true, 
-      run(left, right) {
-        if (this.validSwap && !this.validPriority) 
-          this.validPriority = isValid();        
-        this.validSwap = swapFirstTier(left, right);
-        return this; 
-      }
-    };
-    execute.run(0, 1).run(1, 2).run(0, 2)
-           .run(0, 1).run(1, 2).run(0, 2);
-    return execute.validPriority;
+    renderPriority();
   }
 
   function reorderPriority(fromIndex, toIndex) {
     if (fromIndex === toIndex || fromIndex < 0 || toIndex < 0) {
       return;
     }
-    const order = [...activePlan().priorityOrder];
+    const priorityConfig = activePriorityConfig();
+    const order = [...priorityConfig.priorityOrder];
     const [moved] = order.splice(fromIndex, 1);
     order.splice(toIndex, 0, moved);
-    if (validatePriority(order, activePlan().disabledPriorityIds)) {
-      activePlan().priorityOrder = order;
+    if (state.priorityMode === ADAPTIVE ||
+        validatePriority(order, priorityConfig.disabledPriorityIds)) {
+      priorityConfig.priorityOrder = order;
       state.selectedPriorityId = moved;
       savePlan();
       checkAndRender();
@@ -872,38 +986,41 @@ function bindPriorityList() {
   }
 
   function togglePriorityTalent(talentId) {
-    const plan = activePlan();
-    const order = plan.priorityOrder;
+    const priorityConfig = activePriorityConfig();
+    const order = priorityConfig.priorityOrder;
     const disabled = disabledPrioritySet();
     if (disabled.has(talentId)) {
       disabled.delete(talentId);
       if (lastToggledId === talentId) {
-        plan.priorityOrder = lastSavedOrder;
+        priorityConfig.priorityOrder = lastSavedOrder;
       }
     } else if (order.includes(talentId)) {
       disabled.add(talentId);
-      if (validatePriority(activePlan().priorityOrder, disabled)) {
+      if (state.priorityMode === ADAPTIVE ||
+          validatePriority(priorityConfig.priorityOrder, disabled)) {
         lastToggledId = talentId;
         lastSavedOrder = deepcopy(order);
       } else {
         disabled.delete(talentId);
         showMsgbox();
+        return;
       }
     } else {
       logger.log("invalid id:", talentId);
       return;
     }
-    plan.disabledPriorityIds = plan.priorityOrder.filter((id) => disabled.has(id));
+    priorityConfig.disabledPriorityIds = priorityConfig.priorityOrder.filter((id) => disabled.has(id));
     savePlan();
     checkAndRender(false);
     emitConfigChange("priorityToggle");
   }
 
   function resetPriorityOrder() {
-    const plan = activePlan();
-    plan.priorityOrder = defaultPriorityOrder(state.selectedClass);
-    plan.disabledPriorityIds = defaultDisabledPriorityIds(state.selectedClass);
-    state.selectedPriorityId = plan.priorityOrder[0] ?? null;
+    const priorityConfig = activePriorityConfig();
+    const defaults = defaultPriorityConfig();
+    priorityConfig.priorityOrder = defaults.priorityOrder;
+    priorityConfig.disabledPriorityIds = defaults.disabledPriorityIds;
+    state.selectedPriorityId = priorityConfig.priorityOrder[0] ?? null;
     savePlan();
     checkAndRender();
     emitConfigChange("priorityOrder");
@@ -954,7 +1071,7 @@ function bindPriorityList() {
       return;
     }
     event.preventDefault();
-    const draggedTalentId = activePlan().priorityOrder[draggedIndex];
+    const draggedTalentId = activePriorityConfig().priorityOrder[draggedIndex];
     if (!draggedTalentId) {
       return;
     }
@@ -964,7 +1081,7 @@ function bindPriorityList() {
     }
 
     dragPreviewIndex = previewIndex;
-    const { previewOrder } = buildPriorityPreviewOrder(activePlan().priorityOrder, draggedIndex, previewIndex);
+    const { previewOrder } = buildPriorityPreviewOrder(activePriorityConfig().priorityOrder, draggedIndex, previewIndex);
     applyPriorityPreview(previewOrder, draggedTalentId);
   });
 
@@ -973,9 +1090,9 @@ function bindPriorityList() {
     if (draggedIndex === null) {
       return;
     }
-    const draggedTalentId = activePlan().priorityOrder[draggedIndex];
+    const draggedTalentId = activePriorityConfig().priorityOrder[draggedIndex];
     const previewIndex = dragPreviewIndex ?? resolvePriorityPreviewIndex(event.clientX, draggedTalentId);
-    const { nextIndex } = buildPriorityPreviewOrder(activePlan().priorityOrder, draggedIndex, previewIndex);
+    const { nextIndex } = buildPriorityPreviewOrder(activePriorityConfig().priorityOrder, draggedIndex, previewIndex);
 
     clearPriorityDragMarkers();
     dragPreviewIndex = null;
@@ -984,7 +1101,7 @@ function bindPriorityList() {
 
   elements.priorityEditor.addEventListener("click", (event) => {
     function moveTalent(talentId, targetFunc) {
-      const order = activePlan().priorityOrder;
+      const order = activePriorityConfig().priorityOrder;
       const fromIndex = order.indexOf(talentId);
       const targetIndex = targetFunc(fromIndex);
       const clampedIndex = Math.max(0, Math.min(targetIndex, order.length - 1));
@@ -1004,7 +1121,7 @@ function bindPriorityList() {
       return;
     }
 
-    const selectedId = state.selectedPriorityId ?? activePlan().priorityOrder[0];
+    const selectedId = state.selectedPriorityId ?? activePriorityConfig().priorityOrder[0];
     if (!selectedId) {
       return;
     }
@@ -1016,6 +1133,23 @@ function bindPriorityList() {
       togglePriorityTalent(selectedId);
     }
   });
+
+  for (const button of elements.priorityModeButtons) {
+    button.addEventListener("click", () => {
+      const nextMode = button.dataset.priorityMode;
+      if (!PRIORITY_MODES.includes(nextMode) || nextMode === state.priorityMode) {
+        return;
+      }
+      lastSavedOrder = null;
+      lastToggledId = null;
+      state.priorityMode = nextMode;
+      activePlan().priorityMode = nextMode;
+      state.selectedPriorityId = activePriorityConfig().priorityOrder[0] ?? null;
+      savePlan();
+      renderPriority();
+      emitConfigChange("priorityMode");
+    });
+  }
 }
 
 function bindTalentPointControls() {
@@ -1091,7 +1225,7 @@ function bindControls() {
   bindTopbarControls();
   bindClassSelector();
   bindTalentPointControls();
-  bindPriorityList();
+  bindPriority();
   bindSimulationControls();
   bindMsgbox();
 }
@@ -1099,41 +1233,21 @@ function bindControls() {
 function installPublicApi() {
   elements.app.addEventListener("calculator:config-change", (event) => {
     logger.log("config change ->", event.detail, state.currentStep, "/", state.points);
-    let bestMeta = new TalentMeta();
-    let priorityOrder = deepcopy(activePlan().priorityOrder);
-    let disabled = disabledPrioritySet();
-    let firstIdx = [-1, -1, -1], tierMap = {"small": 0, "medium": 1, "large": 2};
-    for (let i = 0; i < priorityOrder.length; i++) {
-      let tierIdx = tierMap[state.talentMeta[priorityOrder[i]].tier];
-      if (firstIdx[tierIdx] == -1)
-        firstIdx[tierIdx] = i;
-    }
-    let findBest = () => {
-      let calculator = new Calculator(priorityOrder, disabled, state.points);
-      let newMeta = calculator.calculate() ?? bestMeta;
-      if (newMeta.isBetterOrder(bestMeta))
-        bestMeta = newMeta;
-    };
-    let swapFirstTier = (leftTier, rightTier) => {
-      const leftIdx = firstIdx[leftTier];
-      const rightIdx = firstIdx[rightTier];
-      if (leftIdx === -1 || rightIdx === -1) {
-        return false;
+    let priorityOrder = activePriorityConfig().priorityOrder;
+    let disabled = new Set(disabledPrioritySet());
+    if (state.priorityMode === ADAPTIVE) {
+      while (!validatePriority(priorityOrder, disabled)) {
+        let smallTalentId = null;
+        for (const id of disabled) {
+          if (state.talentMeta[id].tier !== "small")
+            continue;
+          smallTalentId = id;
+          break;
+        }
+        disabled.delete(smallTalentId);
       }
-      [priorityOrder[leftIdx], priorityOrder[rightIdx]]
-      = [priorityOrder[rightIdx], priorityOrder[leftIdx]];
-      return true;
     }
-    const execute = {
-      validSwap: true, 
-      run(left, right) {
-        if (this.validSwap) findBest();        
-        this.validSwap = swapFirstTier(left, right);
-        return this; 
-      }
-    };
-    execute.run(0, 1).run(1, 2).run(0, 2)
-           .run(0, 1).run(1, 2).run(0, 2);
+    let bestMeta = calculatePriority(priorityOrder, disabled);
     state.talentMeta.loadOrder(bestMeta.order);
     state.talentMeta.stepToTarget(state.currentStep);
     renderNextTalents(state.talentMeta.getNext10());

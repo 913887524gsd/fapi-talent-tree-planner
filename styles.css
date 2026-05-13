@@ -607,6 +607,61 @@ button {
   padding: 18px;
 }
 
+.mode-switch {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(92px, 1fr));
+  align-items: center;
+  min-height: 42px;
+  padding: 4px;
+  border: 1px solid rgba(112, 206, 255, 0.28);
+  border-radius: 999px;
+  background: rgba(7, 16, 27, 0.78);
+}
+
+.mode-switch::before {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  top: 4px;
+  bottom: 4px;
+  left: 4px;
+  width: calc((100% - 8px) / 2);
+  border-radius: 999px;
+  background:
+    linear-gradient(180deg, rgba(26, 104, 156, 0.95), rgba(9, 39, 72, 0.98));
+  box-shadow: 0 0 18px rgba(97, 221, 255, 0.16);
+  transition: transform 180ms ease;
+}
+
+.mode-switch[data-active-mode="adaptive"]::before {
+  transform: translateX(100%);
+}
+
+.mode-option {
+  position: relative;
+  z-index: 1;
+  min-height: 34px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  font-weight: 800;
+  line-height: 1;
+  transition: color 160ms ease;
+}
+
+.mode-option.active {
+  color: var(--text);
+}
+
+.mode-option:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
 .priority-list {
   display: flex;
   gap: 12px;
@@ -876,6 +931,10 @@ button {
     justify-content: flex-start;
   }
 
+  .mode-switch {
+    justify-self: start;
+  }
+
   .priority-hints {
     display: none;
   }
@@ -922,6 +981,10 @@ button {
   .priority-row {
     width: 70px;
     height: 70px;
+  }
+
+  .mode-switch {
+    grid-template-columns: repeat(2, minmax(84px, 1fr));
   }
 }
 
