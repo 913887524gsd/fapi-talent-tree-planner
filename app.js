@@ -1236,15 +1236,11 @@ function installPublicApi() {
     let priorityOrder = activePriorityConfig().priorityOrder;
     let disabled = new Set(disabledPrioritySet());
     if (state.priorityMode === ADAPTIVE) {
-      while (!validatePriority(priorityOrder, disabled)) {
-        let smallTalentId = null;
-        for (const id of disabled) {
-          if (state.talentMeta[id].tier !== "small")
-            continue;
-          smallTalentId = id;
-          break;
-        }
-        disabled.delete(smallTalentId);
+      for (const id of priorityOrder) {
+        if (state.talentMeta[id].tier !== "small")
+          continue;
+        if (disabled.has(id))
+          disabled.delete(id);
       }
     }
     let bestMeta = calculatePriority(priorityOrder, disabled);
