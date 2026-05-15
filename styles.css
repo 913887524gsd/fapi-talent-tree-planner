@@ -607,6 +607,12 @@ button {
   padding: 18px;
 }
 
+.priority-mode-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .mode-switch {
   position: relative;
   isolation: isolate;
@@ -660,6 +666,19 @@ button {
 .mode-option:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
+}
+
+.priority-mode-hint {
+  margin: 0;
+  padding: 7px 10px;
+  border: 1px solid rgba(112, 206, 255, 0.2);
+  border-radius: 999px;
+  background: rgba(112, 206, 255, 0.08);
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
 }
 
 .priority-list {
@@ -933,6 +952,10 @@ button {
 
   .mode-switch {
     justify-self: start;
+  }
+
+  .priority-mode-group {
+    flex-wrap: wrap;
   }
 
   .priority-hints {

@@ -42,8 +42,8 @@ const DEFAULT_PRIORITY_DATA = {
       disabledPriorityIds: ["con+", "pro", "conicon", "lck", "cal", "cexp"],
     },
     adaptive: {
-      priorityOrder: ["uniq", "swp", "sexp", "reinc", "fry", "hpt", "milk", "pexp", "seed", "atk", "con+", "pro", "conicon", "lck", "cal", "cexp"],
-      disabledPriorityIds: ["con+", "pro", "conicon", "lck", "cal", "cexp"],
+      priorityOrder: ["uniq", "swp", "sexp", "fry", "hpt", "con+", "pro", "seed", "reinc", "atk", "conicon", "lck", "milk", "cal", "cexp", "pexp"],
+      disabledPriorityIds: ["seed", "con+", "pro", "reinc", "atk", "conicon", "lck", "milk", "cal", "cexp", "pexp"],
     },
   },
   smasher: {
@@ -52,8 +52,8 @@ const DEFAULT_PRIORITY_DATA = {
       disabledPriorityIds: ["ir", "cpow", "str", "agi", "leff", "fer"],
     },
     adaptive: {
-      priorityOrder: ["uniq", "skp", "sexp", "seed", "pcap", "renown", "cexp", "str+", "prnk", "hp", "ir", "cpow", "str", "agi", "leff", "fer"],
-      disabledPriorityIds: ["ir", "cpow", "str", "agi", "leff", "fer"],
+      priorityOrder: ["uniq", "skp", "sexp", "cexp", "pcap", "str+", "ir", "seed", "cpow", "hp", "str", "agi", "renown", "leff", "prnk", "fer"],
+      disabledPriorityIds: ["str+", "ir", "seed", "cpow", "hp", "str", "agi", "renown", "leff", "prnk", "fer"],
     },
   },
   hoer: {
@@ -62,8 +62,8 @@ const DEFAULT_PRIORITY_DATA = {
       disabledPriorityIds: ["agi+", "ir", "agi", "hpt", "lqty", "fer"],
     },
     adaptive: {
-      priorityOrder: ["uniq", "seed", "sexp", "reinc", "renown", "milk", "pcap", "cpow", "atk", "conicon", "agi+", "ir", "agi", "hpt", "lqty", "fer"],
-      disabledPriorityIds: ["agi+", "ir", "agi", "hpt", "lqty", "fer"],
+      priorityOrder: ["uniq", "seed", "sexp", "reinc", "renown", "agi+", "cpow", "ir", "atk", "conicon", "agi", "milk", "hpt", "lqty", "fer", "pcap"],
+      disabledPriorityIds: ["agi+", "cpow", "ir", "atk", "conicon", "agi", "milk", "hpt", "lqty", "pcap", "fer"],
     },
   },
   harvester: {
@@ -72,8 +72,8 @@ const DEFAULT_PRIORITY_DATA = {
       disabledPriorityIds: ["str+", "swp", "str", "dex", "lqty", "fer"],
     },
     adaptive: {
-      priorityOrder: ["uniq", "pro", "sexp", "seed", "renown", "pcap", "prnk", "res", "hp", "fry", "str+", "swp", "str", "dex", "lqty", "fer"],
-      disabledPriorityIds: ["str+", "swp", "str", "dex", "lqty", "fer"],
+      priorityOrder: ["uniq", "pro", "sexp", "res", "prnk", "str+", "swp", "seed", "hp", "str", "dex", "renown", "lqty", "fer", "pcap", "fry"],
+      disabledPriorityIds: ["fry", "hp", "pcap", "renown", "seed", "str+", "swp", "str", "dex", "lqty", "fer"],
     },
   },
   rancher: {
@@ -82,8 +82,8 @@ const DEFAULT_PRIORITY_DATA = {
       disabledPriorityIds: ["dex+", "skp", "dex", "cal", "hpt", "lqty"],
     },
     adaptive: {
-      priorityOrder: ["uniq", "cpow", "sexp", "reinc", "renown", "milk", "prnk", "seed", "atk", "conicon", "dex+", "skp", "dex", "cal", "hpt", "lqty"],
-      disabledPriorityIds: ["dex+", "skp", "dex", "cal", "hpt", "lqty"],
+      priorityOrder: ["uniq", "cpow", "sexp", "reinc", "milk", "dex+", "seed", "skp", "atk", "conicon", "dex", "cal", "hpt", "lqty", "renown", "prnk"],
+      disabledPriorityIds: ["conicon", "atk", "seed", "prnk", "renown", "dex+", "skp", "dex", "cal", "hpt", "lqty"],
     },
   },
   freeloader: {
@@ -92,8 +92,8 @@ const DEFAULT_PRIORITY_DATA = {
       disabledPriorityIds: ["lck+", "pro", "lck", "leff", "fry", "lqty"],
     },
     adaptive: {
-      priorityOrder: ["uniq", "ir", "sexp", "seed", "pexp", "cexp", "res", "cal", "hp", "str", "lck+", "pro", "lck", "leff", "fry", "lqty"],
-      disabledPriorityIds: ["lck+", "pro", "lck", "leff", "fry", "lqty"],
+      priorityOrder: ["uniq", "ir", "sexp", "pexp", "res", "pro", "lck+", "seed", "hp", "str", "lck", "cal", "leff", "fry", "lqty", "cexp"],
+      disabledPriorityIds: ["lck+", "cexp", "str", "hp", "cal", "seed", "lck", "leff", "fry", "lqty"],
     },
   },
 };
@@ -129,7 +129,9 @@ const I18N = {
     priorityTitle: "Priority",
     priorityModeStrict: "Strict",
     priorityModeAdaptive: "Adaptive",
-    dragHintDesktop: "Drag icons on desktop to sort",
+    priorityHintStrict: "Exact priority only",
+    priorityHintAdaptive: "Auto-fill small talents",
+    dragHintDesktop: "Drag icons to sort",
     doubleClickHint: "Double click to enable/disable",
     jumpToStep: "Jump to Step",
     prevStep: "Previous",
@@ -163,7 +165,9 @@ const I18N = {
     priorityTitle: "天赋优先级",
     priorityModeStrict: "精确分配",
     priorityModeAdaptive: "自动补全",
-    dragHintDesktop: "电脑端可直接拖拽图标排序",
+    priorityHintStrict: "仅按优先级",
+    priorityHintAdaptive: "自动补小天赋",
+    dragHintDesktop: "拖拽图标排序",
     doubleClickHint: "双击可启用/禁用天赋",
     jumpToStep: "跳转步数",
     prevStep: "上一步",
@@ -188,7 +192,7 @@ const I18N = {
   },
 };
 
-const STORAGE_KEY = "talent-tree-ui:v2026.05.13";
+const STORAGE_KEY = "talent-tree-ui:v2026.05.15";
 const MAX_TALENT_POINTS = 10000;
 let debug = false;
 const logger = {
@@ -218,6 +222,7 @@ const elements = {
   currentStepValue: document.getElementById("currentStepValue"),
   priorityList: document.getElementById("priorityList"),
   priorityEditor: document.getElementById("priorityEditor"),
+  priorityModeHint: document.getElementById("priorityModeHint"),
   priorityModeSwitch: document.getElementById("priorityModeSwitch"),
   priorityModeButtons: document.querySelectorAll("[data-priority-mode]"),
   priorityToggleButton: document.getElementById("priorityToggleButton"),
@@ -673,6 +678,9 @@ function renderPriority() {
   elements.priorityToggleButton.textContent = selectedDisabled ? t("enableTalent") : t("disableTalent");
 
   elements.priorityModeSwitch.dataset.activeMode = state.priorityMode;
+  elements.priorityModeHint.textContent = state.priorityMode === STRICT
+    ? t("priorityHintStrict")
+    : t("priorityHintAdaptive");
   for (const button of elements.priorityModeButtons) {
     const isActive = button.dataset.priorityMode === state.priorityMode;
     button.classList.toggle("active", isActive);

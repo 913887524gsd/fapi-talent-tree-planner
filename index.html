@@ -4,8 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Talent Tree Planner</title>
-    <link rel="stylesheet" href="./styles.css?v=2026.05.14" />
-    <script defer src="./app.js?v=2026.05.14"></script>
+    <link rel="stylesheet" href="./styles.css?v=2026.05.15:force" />
+    <script defer src="./app.js?v=2026.05.15"></script>
   </head>
   <body>
     <div class="app-shell" id="app">
@@ -36,32 +36,35 @@
       <section class="panel priority-card">
         <div class="section-heading">
           <h2 data-i18n="priorityTitle">Priority</h2>
-          <div
-            class="mode-switch"
-            id="priorityModeSwitch"
-            role="radiogroup"
-            data-active-mode="strict"
-          >
-            <button
-              type="button"
-              class="mode-option active"
-              id="priorityStrictModeButton"
-              data-priority-mode="strict"
-              role="radio"
-              data-i18n="priorityModeStrict"
+          <div class="priority-mode-group">
+            <p class="priority-mode-hint" id="priorityModeHint">Exact priority only</p>
+            <div
+              class="mode-switch"
+              id="priorityModeSwitch"
+              role="radiogroup"
+              data-active-mode="strict"
             >
-              Strict
-            </button>
-            <button
-              type="button"
-              class="mode-option"
-              id="priorityAdaptiveModeButton"
-              data-priority-mode="adaptive"
-              role="radio"
-              data-i18n="priorityModeAdaptive"
-            >
-              Adaptive
-            </button>
+              <button
+                type="button"
+                class="mode-option active"
+                id="priorityStrictModeButton"
+                data-priority-mode="strict"
+                role="radio"
+                data-i18n="priorityModeStrict"
+              >
+                Strict
+              </button>
+              <button
+                type="button"
+                class="mode-option"
+                id="priorityAdaptiveModeButton"
+                data-priority-mode="adaptive"
+                role="radio"
+                data-i18n="priorityModeAdaptive"
+              >
+                Adaptive
+              </button>
+            </div>
           </div>
         </div>
 
